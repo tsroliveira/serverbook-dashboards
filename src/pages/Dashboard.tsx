@@ -73,145 +73,144 @@ const Dashboard = () => {
                 Grid View
               </TabsTrigger>
             </TabsList>
+            {loading ? (
+              <div className="flex justify-center items-center h-64 mt-6">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+              </div>
+            ) : servers.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-6">
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <div className="space-y-1">
+                        <CardTitle className="text-sm font-medium">Total Servers</CardTitle>
+                        <CardDescription>Across all environments</CardDescription>
+                      </div>
+                      <ServerIcon className="h-5 w-5 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold">{servers.length}</div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <div className="space-y-1">
+                        <CardTitle className="text-sm font-medium">Server Status</CardTitle>
+                        <CardDescription>Health overview</CardDescription>
+                      </div>
+                      <BarChartIcon className="h-5 w-5 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent className="pt-1">
+                      <div className="h-24">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={statusData}
+                              cx="50%"
+                              cy="50%"
+                              innerRadius={30}
+                              outerRadius={45}
+                              paddingAngle={5}
+                              dataKey="value"
+                              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                              labelLine={false}
+                            >
+                              {statusData.map((entry, index) => (
+                                <Cell 
+                                  key={`cell-${index}`} 
+                                  fill={COLORS[entry.name as keyof typeof COLORS] || COLORS.unknown} 
+                                />
+                              ))}
+                            </Pie>
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <div className="space-y-1">
+                        <CardTitle className="text-sm font-medium">OS Distribution</CardTitle>
+                        <CardDescription>Top operating systems</CardDescription>
+                      </div>
+                      <HardDrive className="h-5 w-5 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent className="pt-1">
+                      <div className="h-24">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={osData} layout="vertical">
+                            <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                            <XAxis type="number" hide />
+                            <YAxis 
+                              type="category" 
+                              dataKey="name" 
+                              width={70}
+                              tick={{ fontSize: 10 }}
+                            />
+                            <Tooltip 
+                              formatter={(value) => [`${value} servers`, 'Count']}
+                              contentStyle={{ fontSize: '12px' }}
+                            />
+                            <Bar dataKey="value" fill="#60a5fa" barSize={12} radius={[0, 4, 4, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <div className="space-y-1">
+                        <CardTitle className="text-sm font-medium">Server Health</CardTitle>
+                        <CardDescription>Current status</CardDescription>
+                      </div>
+                      <div className="flex space-x-1">
+                        <div className="h-3 w-3 rounded-full bg-green-500" 
+                          title={`Online: ${statusCounts.online || 0}`} />
+                        <div className="h-3 w-3 rounded-full bg-red-500"
+                          title={`Offline: ${statusCounts.offline || 0}`} />
+                        <div className="h-3 w-3 rounded-full bg-yellow-500"
+                          title={`Maintenance: ${statusCounts.maintenance || 0}`} />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-green-500">
+                        {statusCounts.online ? Math.round((statusCounts.online / servers.length) * 100) : 0}%
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {statusCounts.online || 0} servers online
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <TabsContent value="table" className="mt-6">
+                  <ServerTable />
+                </TabsContent>
+
+                <TabsContent value="grid" className="mt-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {servers.map((server) => (
+                      <ServerCard key={server.id} server={server} />
+                    ))}
+                  </div>
+                </TabsContent>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center p-8 text-center mt-6">
+                <div className="bg-muted/50 p-4 rounded-full mb-4">
+                  <Database className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-xl font-medium mb-2">No servers found</h3>
+                <p className="text-muted-foreground max-w-md">
+                  Upload a CSV file with server information to get started.
+                </p>
+              </div>
+            )}
           </Tabs>
         </div>
-
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          </div>
-        ) : servers.length > 0 ? (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <div className="space-y-1">
-                    <CardTitle className="text-sm font-medium">Total Servers</CardTitle>
-                    <CardDescription>Across all environments</CardDescription>
-                  </div>
-                  <ServerIcon className="h-5 w-5 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold">{servers.length}</div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <div className="space-y-1">
-                    <CardTitle className="text-sm font-medium">Server Status</CardTitle>
-                    <CardDescription>Health overview</CardDescription>
-                  </div>
-                  <BarChartIcon className="h-5 w-5 text-muted-foreground" />
-                </CardHeader>
-                <CardContent className="pt-1">
-                  <div className="h-24">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={statusData}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={30}
-                          outerRadius={45}
-                          paddingAngle={5}
-                          dataKey="value"
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                          labelLine={false}
-                        >
-                          {statusData.map((entry, index) => (
-                            <Cell 
-                              key={`cell-${index}`} 
-                              fill={COLORS[entry.name as keyof typeof COLORS] || COLORS.unknown} 
-                            />
-                          ))}
-                        </Pie>
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <div className="space-y-1">
-                    <CardTitle className="text-sm font-medium">OS Distribution</CardTitle>
-                    <CardDescription>Top operating systems</CardDescription>
-                  </div>
-                  <HardDrive className="h-5 w-5 text-muted-foreground" />
-                </CardHeader>
-                <CardContent className="pt-1">
-                  <div className="h-24">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={osData} layout="vertical">
-                        <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                        <XAxis type="number" hide />
-                        <YAxis 
-                          type="category" 
-                          dataKey="name" 
-                          width={70}
-                          tick={{ fontSize: 10 }}
-                        />
-                        <Tooltip 
-                          formatter={(value) => [`${value} servers`, 'Count']}
-                          contentStyle={{ fontSize: '12px' }}
-                        />
-                        <Bar dataKey="value" fill="#60a5fa" barSize={12} radius={[0, 4, 4, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <div className="space-y-1">
-                    <CardTitle className="text-sm font-medium">Server Health</CardTitle>
-                    <CardDescription>Current status</CardDescription>
-                  </div>
-                  <div className="flex space-x-1">
-                    <div className="h-3 w-3 rounded-full bg-green-500" 
-                      title={`Online: ${statusCounts.online || 0}`} />
-                    <div className="h-3 w-3 rounded-full bg-red-500"
-                      title={`Offline: ${statusCounts.offline || 0}`} />
-                    <div className="h-3 w-3 rounded-full bg-yellow-500"
-                      title={`Maintenance: ${statusCounts.maintenance || 0}`} />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-green-500">
-                    {statusCounts.online ? Math.round((statusCounts.online / servers.length) * 100) : 0}%
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {statusCounts.online || 0} servers online
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            <TabsContent value="table" className="m-0">
-              <ServerTable />
-            </TabsContent>
-
-            <TabsContent value="grid" className="m-0">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {servers.map((server) => (
-                  <ServerCard key={server.id} server={server} />
-                ))}
-              </div>
-            </TabsContent>
-          </>
-        ) : (
-          <div className="flex flex-col items-center justify-center p-8 text-center">
-            <div className="bg-muted/50 p-4 rounded-full mb-4">
-              <Database className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <h3 className="text-xl font-medium mb-2">No servers found</h3>
-            <p className="text-muted-foreground max-w-md">
-              Upload a CSV file with server information to get started.
-            </p>
-          </div>
-        )}
       </div>
     </MainLayout>
   );

@@ -63,26 +63,24 @@ const Dashboard = () => {
             </p>
           </div>
           
-          <div className="w-full max-w-[400px]">
+          <Tabs defaultValue={viewMode} className="w-full max-w-[400px]" onValueChange={(value) => setViewMode(value as 'table' | 'grid')}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger 
                 value="table" 
-                onClick={() => setViewMode('table')}
-                className={`flex items-center gap-2 ${viewMode === 'table' ? 'bg-background text-foreground shadow-sm' : ''}`}
+                className="flex items-center gap-2"
               >
                 <ServerIcon className="h-4 w-4" />
                 Table View
               </TabsTrigger>
               <TabsTrigger 
                 value="grid" 
-                onClick={() => setViewMode('grid')}
-                className={`flex items-center gap-2 ${viewMode === 'grid' ? 'bg-background text-foreground shadow-sm' : ''}`}
+                className="flex items-center gap-2"
               >
                 <Database className="h-4 w-4" />
                 Grid View
               </TabsTrigger>
             </TabsList>
-          </div>
+          </Tabs>
         </div>
 
         {loading ? (
@@ -201,6 +199,21 @@ const Dashboard = () => {
               </Card>
             </div>
 
+            <Tabs value={viewMode} className="hidden">
+              <TabsContent value="table" className="m-0">
+                <div className="rounded-md overflow-hidden">
+                  <ServerTable />
+                </div>
+              </TabsContent>
+              <TabsContent value="grid" className="m-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {servers.map((server) => (
+                    <ServerCard key={server.id} server={server} />
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
+
             {viewMode === 'table' ? (
               <div className="rounded-md overflow-hidden">
                 <ServerTable />
@@ -230,3 +243,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+

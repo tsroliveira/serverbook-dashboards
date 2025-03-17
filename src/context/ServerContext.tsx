@@ -1,6 +1,7 @@
 
-import { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
+import { loadServers, saveServers } from '@/utils/database';
 
 // Define the Server type
 export interface Server {
@@ -30,8 +31,21 @@ const ServerContext = createContext<ServerContextType | undefined>(undefined);
 
 export const ServerProvider = ({ children }: { children: ReactNode }) => {
   const [servers, setServers] = useState<Server[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Load initial data from localStorage on mount
+  useEffect(() => {
+    try {
+      const initialServers = loadServers();
+      setServers(initialServers);
+    } catch (err) {
+      setError('Failed to load initial server data');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   // Add new servers
   const addServers = useCallback((newServers: Server[]) => {
@@ -48,7 +62,7 @@ export const ServerProvider = ({ children }: { children: ReactNode }) => {
         const updatedServers = [...prevServers, ...filteredNewServers];
         
         // Save to localStorage as a simple persistence mechanism
-        localStorage.setItem('servers', JSON.stringify(updatedServers));
+        saveServers(updatedServers);
         
         toast.success(`Added ${filteredNewServers.length} servers`);
         return updatedServers;
@@ -71,7 +85,7 @@ export const ServerProvider = ({ children }: { children: ReactNode }) => {
         const updatedServers = prevServers.map(server => 
           server.id === id ? { ...server, ...updatedServer } : server
         );
-        localStorage.setItem('servers', JSON.stringify(updatedServers));
+        saveServers(updatedServers);
         toast.success(`Updated server ${id}`);
         return updatedServers;
       });
@@ -91,7 +105,7 @@ export const ServerProvider = ({ children }: { children: ReactNode }) => {
     try {
       setServers(prevServers => {
         const updatedServers = prevServers.filter(server => server.id !== id);
-        localStorage.setItem('servers', JSON.stringify(updatedServers));
+        saveServers(updatedServers);
         toast.success(`Deleted server ${id}`);
         return updatedServers;
       });

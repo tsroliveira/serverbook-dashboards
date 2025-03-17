@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, 
   BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid 
@@ -11,19 +11,10 @@ import { useServers } from '@/context/ServerContext';
 import ServerTable from '@/components/ServerTable';
 import ServerCard from '@/components/ServerCard';
 import MainLayout from '@/layouts/MainLayout';
-import { loadServers } from '@/utils/database';
 
 const Dashboard = () => {
-  const { servers, addServers } = useServers();
+  const { servers, loading } = useServers();
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
-
-  // Load servers from localStorage on mount
-  useEffect(() => {
-    const savedServers = loadServers();
-    if (savedServers.length > 0) {
-      addServers(savedServers);
-    }
-  }, [addServers]);
 
   // Status counts for pie chart
   const statusCounts = servers.reduce((acc, server) => {
@@ -85,7 +76,11 @@ const Dashboard = () => {
           </Tabs>
         </div>
 
-        {servers.length > 0 ? (
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        ) : servers.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
               <Card>

@@ -4,6 +4,10 @@
 
 **URL**: https://lovable.dev/projects/bf8cda0a-db55-4983-b51a-ab15d088bd17
 
+![Logo da Minha Empresa](https://github.com/tsroliveira/serverbook-display/blob/main/public/1.png)
+
+![Logo da Minha Empresa](https://github.com/tsroliveira/serverbook-display/blob/main/public/2.png)
+
 ## How can I edit this code?
 
 There are several ways of editing your application.
